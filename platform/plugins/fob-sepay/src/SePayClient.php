@@ -120,8 +120,8 @@ class SePayClient
     {
         $refreshToken = setting()->get('sepay_refresh_token');
 
-        if (! $refreshToken) {
-            throw new Exception('Refresh token not found. Please reconnect your SePay account.');
+        if (! $refreshToken || $refreshToken === 'manual_token') {
+            throw new Exception('Refresh token not found or manual token expired. Please reconnect your SePay account.');
         }
 
         $response = Http::post(SEPAY_FOB_URL . '/oauth/sepay/token', [

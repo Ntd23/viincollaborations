@@ -104,7 +104,7 @@
                             </div>
                         @endif
 
-                        <x-core::form>
+                        <div class="payment-method-form-content">
                             <input type="hidden" name="type" value="{{ $id }}" class="payment_type" />
 
                             <div class="row">
@@ -166,7 +166,7 @@
                                     {{ trans('plugins/payment::payment.update') }}
                                 </x-core::button>
                             </div>
-                        </x-core::form>
+                        </div>
                     @else
                         <div class="sepay-oauth-container">
                             <div class="row align-items-center mb-4">
@@ -193,8 +193,21 @@
                                     color="primary"
                                 >
                                     <x-core::icon name="ti ti-link" class="me-2" />
-                                    Kết nối với SePay ngay
+                                    Kết nối bằng OAuth SePay
                                 </x-core::button>
+                            </div>
+
+                            <div class="card mt-4 border bg-body-tertiary p-3">
+                                <div class="card-body p-0">
+                                    <h4 class="card-title fw-bold mb-2 fs-5">Hoặc kết nối thủ công bằng API Token</h4>
+                                    <p class="text-muted small mb-3">Nếu máy chủ trung gian OAuth gặp sự cố, bạn có thể tạo API Token từ trang <strong>my.sepay.vn &gt; Tích hợp API &gt; Token</strong> rồi nhập vào đây để kết nối trực tiếp:</p>
+                                    
+                                    <div class="input-group mb-2">
+                                        <input type="password" id="sepay_manual_token" class="form-control" placeholder="Nhập API Token của bạn (ví dụ: apise_...)">
+                                        <button class="btn btn-outline-primary" type="button" onclick="connectSepayManually()">Kết nối thủ công</button>
+                                    </div>
+                                    <div id="sepay_manual_error" class="text-danger small mt-1" style="display:none;"></div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -241,4 +254,91 @@
             });
         }
     }
+
+    function connectSepayManually() {
+        const token = $('#sepay_manual_token').val().trim();
+        const $error = $('#sepay_manual_error');
+        $error.hide();
+
+        if (!token) {
+            $error.text('Vui lòng nhập API Token.').show();
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route('sepay.oauth.manual-connect') }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                token: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    $error.text(response.message || 'Token không hợp lệ hoặc không thể kết nối.').show();
+                }
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Đã xảy ra lỗi khi kết nối.';
+                $error.text(msg).show();
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Toggle hiển thị form cấu hình khi nhấn Settings/Edit
+        $(document).off('click', '.toggle-payment-item').on('click', '.toggle-payment-item', function(e) {
+            e.preventDefault();
+            $(this).closest('tbody').find('.payment-content-item').toggleClass('hidden');
+        });
+
+        // Xử lý nút Kích hoạt & Cập nhật
+        $(document).off('click', '.save-payment-item').on('click', '.save-payment-item', function(e) {
+            e.preventDefault();
+            const $parentForm = $(this).closest('form');
+            if ($parentForm.length) {
+                // Thêm/cập nhật input trạng thái kích hoạt (1)
+                if ($parentForm.find('input[name="payment_sepay_status"]').length === 0) {
+                    $parentForm.append('<input type="hidden" name="payment_sepay_status" value="1">');
+                } else {
+                    $parentForm.find('input[name="payment_sepay_status"]').val('1');
+                }
+
+                // Đảm bảo có input type để validate
+                if ($parentForm.find('input[name="type"]').length === 0) {
+                    $parentForm.append('<input type="hidden" name="type" value="sepay">');
+                } else {
+                    $parentForm.find('input[name="type"]').val('sepay');
+                }
+
+                $parentForm.submit();
+            }
+        });
+
+        // Xử lý nút Tắt kích hoạt
+        $(document).off('click', '.disable-payment-item').on('click', '.disable-payment-item', function(e) {
+            e.preventDefault();
+            if (confirm('Bạn có chắc chắn muốn tắt kích hoạt phương thức thanh toán này?')) {
+                const $parentForm = $(this).closest('form');
+                if ($parentForm.length) {
+                    // Thêm/cập nhật input trạng thái tắt kích hoạt (0)
+                    if ($parentForm.find('input[name="payment_sepay_status"]').length === 0) {
+                        $parentForm.append('<input type="hidden" name="payment_sepay_status" value="0">');
+                    } else {
+                        $parentForm.find('input[name="payment_sepay_status"]').val('0');
+                    }
+
+                    // Đảm bảo có input type để validate
+                    if ($parentForm.find('input[name="type"]').length === 0) {
+                        $parentForm.append('<input type="hidden" name="type" value="sepay">');
+                    } else {
+                        $parentForm.find('input[name="type"]').val('sepay');
+                    }
+
+                    $parentForm.submit();
+                }
+            }
+        });
+    });
 </script>

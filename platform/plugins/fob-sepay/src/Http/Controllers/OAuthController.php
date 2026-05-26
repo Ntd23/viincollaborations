@@ -75,4 +75,54 @@ class OAuthController extends BaseController
             ->setMessage('Ngắt kết nối với SePay thành công')
             ->setData(['success' => true]);
     }
+
+    public function manualConnect(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        $token = $validated['token'];
+
+        try {
+            // Kiểm tra token bằng cách gọi thử API "me"
+            $response = \Illuminate\Support\Facades\Http::baseUrl('https://my.sepay.vn/api/v1')
+                ->withToken($token)
+                ->get('me');
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token không hợp lệ hoặc đã hết hạn (Mã lỗi: ' . $response->status() . ')'
+                ], 400);
+            }
+
+            $data = $response->json();
+            if (isset($data['status']) && $data['status'] !== 'success') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $data['message'] ?? 'Token không hợp lệ.'
+                ], 400);
+            }
+
+            // Xoá cache profile & bank-accounts cũ nếu có
+            \Illuminate\Support\Facades\Cache::forget('sepay.profile');
+            \Illuminate\Support\Facades\Cache::forget('sepay.bank-accounts');
+
+            // Lưu cài đặt
+            setting()->set([
+                'sepay_access_token' => $token,
+                'sepay_refresh_token' => 'manual_token',
+                'sepay_expired_at' => now()->addYears(100),
+                'sepay_connected_at' => now(),
+            ])->save();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể kết nối đến SePay: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

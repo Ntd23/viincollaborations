@@ -28,6 +28,34 @@ class PortfolioServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
+    public function register(): void
+    {
+        if (class_exists(\Composer\Autoload\ClassLoader::class)) {
+            $loader = require base_path('vendor/autoload.php');
+            $loader->addPsr4('Botble\\Payment\\', platform_path('plugins/portfolio/src/Payment/'));
+        }
+
+        $this->app->singleton(\Botble\Payment\Supports\PaymentMethods::class, function () {
+            return new \Botble\Payment\Supports\PaymentMethods();
+        });
+
+        $constants = [
+            'PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS' => 'payment_filter_additional_payment_methods',
+            'PAYMENT_METHODS_SETTINGS_PAGE' => 'payment_methods_settings_page',
+            'PAYMENT_FILTER_PAYMENT_INFO_DETAIL' => 'payment_filter_payment_info_detail',
+            'PAYMENT_FILTER_AFTER_POST_CHECKOUT' => 'payment_filter_after_post_checkout',
+            'PAYMENT_FILTER_PAYMENT_DATA' => 'payment_filter_payment_data',
+            'PAYMENT_ACTION_PAYMENT_PROCESSED' => 'payment_action_payment_processed',
+            'PAYMENT_METHOD_SETTINGS_CONTENT' => 'payment_method_settings_content',
+        ];
+
+        foreach ($constants as $key => $value) {
+            if (! defined($key)) {
+                define($key, $value);
+            }
+        }
+    }
+
     public function boot(): void
     {
         $this
@@ -36,11 +64,20 @@ class PortfolioServiceProvider extends ServiceProvider
             ->loadAndPublishTranslations()
             ->loadAndPublishViews()
             ->loadRoutes()
+            ->loadHelpers()
             ->loadMigrations()
             ->publishAssets()
             ->registerSlugHelper()
             ->registerSeoHelper()
             ->registerLanguage();
+
+        // Nạp bản dịch và view cho mock payment
+        $this->loadTranslationsFrom(platform_path('plugins/portfolio/resources/lang/payment'), 'plugins/payment');
+        $this->loadViewsFrom(platform_path('plugins/portfolio/resources/views/payment'), 'plugins/payment');
+
+        // Đăng ký anonymous component cho <x-plugins-payment::payment-method>
+        \Illuminate\Support\Facades\Blade::anonymousComponentPath(platform_path('plugins/portfolio/resources/views/payment/components'), 'plugins-payment');
+        \Illuminate\Support\Facades\Blade::componentNamespace('Botble\\Payment\\Views\\Components', 'plugins-payment');
 
         $this->app->register(EventServiceProvider::class);
 
@@ -90,6 +127,24 @@ class PortfolioServiceProvider extends ServiceProvider
                     'url' => route('portfolio.packages.index'),
                 ])
                 ->registerItem([
+                    'id' => 'cms-core-portfolio-package-orders',
+                    'priority' => 4.5,
+                    'parent_id' => 'cms-core-portfolio',
+                    'name' => 'Đơn hàng',
+                    'icon' => 'ti ti-shopping-cart',
+                    'permissions' => ['portfolio.package-orders.index'],
+                    'url' => route('portfolio.package-orders.index'),
+                ])
+                ->registerItem([
+                    'id' => 'cms-core-portfolio-payment-settings',
+                    'priority' => 4.6,
+                    'parent_id' => 'cms-core-portfolio',
+                    'name' => 'Cấu hình Thanh toán',
+                    'icon' => 'ti ti-credit-card',
+                    'permissions' => ['portfolio.settings.payments'],
+                    'url' => route('portfolio.settings.payments'),
+                ])
+                ->registerItem([
                     'id' => 'cms-core-portfolio-quotation-requests',
                     'priority' => 5,
                     'parent_id' => 'cms-core-portfolio',
@@ -127,6 +182,36 @@ class PortfolioServiceProvider extends ServiceProvider
         });
 
         FormFrontManager::register(QuotationForm::class, QuoteRequest::class);
+
+        // Đăng ký lắng nghe sự kiện xử lý thanh toán thành công từ Mock Payment
+        $this->app->booted(function () {
+            if (defined('PAYMENT_ACTION_PAYMENT_PROCESSED')) {
+                add_action(PAYMENT_ACTION_PAYMENT_PROCESSED, function (array $paymentData) {
+                    $orderId = data_get($paymentData, 'order_id');
+                    
+                    $order = \Botble\Portfolio\Models\PackageOrder::query()->find($orderId);
+                    if ($order && $order->status !== 'completed') {
+                        $order->update([
+                            'status' => 'completed',
+                        ]);
+
+                        // Gửi email thông báo cho Admin và khách hàng
+                        try {
+                            \Botble\Base\Facades\EmailHandler::setModule('portfolio')
+                                ->setVariableValues([
+                                    'site_name' => config('app.name'),
+                                    'contact_name' => $order->name,
+                                    'contact_email' => $order->email,
+                                    'contact_message' => "Khách hàng {$order->name} đã thanh toán thành công gói dịch vụ: {$order->package_name} (Số tiền: " . number_format($order->amount) . " VND, Mã giao dịch: {$order->payment_code}).",
+                                ])
+                                ->sendUsingTemplate('quote-request-notice');
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error('Portfolio Payment Success Webhook Send Email Error: ' . $e->getMessage());
+                        }
+                    }
+                });
+            }
+        });
     }
 
     protected function registerSlugHelper(): self

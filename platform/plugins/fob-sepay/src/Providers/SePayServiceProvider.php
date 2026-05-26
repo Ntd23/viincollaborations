@@ -11,7 +11,7 @@ class SePayServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (! is_plugin_active('payment')) {
+        if (! is_plugin_active('payment') && ! is_plugin_active('portfolio')) {
             return;
         }
 

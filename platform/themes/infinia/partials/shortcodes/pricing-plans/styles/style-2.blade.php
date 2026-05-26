@@ -88,8 +88,11 @@
                                         @endif
                                     </div>
 
-                                    @if (($actionLabel = $package->action_label) && ($actionUrl = $package->action_url))
-                                        <a href="{{ $actionUrl }}" @class(['btn hover-up w-100 d-flex justify-content-between my-5', 'btn-gradient' => $package->is_popular, 'btn-outline-secondary' => ! $package->is_popular])>
+                                    @if ($actionLabel = $package->action_label)
+                                        @php
+                                            $actionUrl = $package->action_url;
+                                        @endphp
+                                        <a href="{{ (!$actionUrl || $actionUrl == '#') ? route('portfolio.package.checkout', $package->id) : $actionUrl }}" @class(['btn hover-up w-100 d-flex justify-content-between my-5', 'btn-gradient' => $package->is_popular, 'btn-outline-secondary' => ! $package->is_popular])>
                                             {!! BaseHelper::clean($actionLabel) !!}
 
                                             @if ($package->is_popular)
