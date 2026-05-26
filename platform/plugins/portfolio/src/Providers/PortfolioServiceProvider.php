@@ -30,30 +30,7 @@ class PortfolioServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        if (class_exists(\Composer\Autoload\ClassLoader::class)) {
-            $loader = require base_path('vendor/autoload.php');
-            $loader->addPsr4('Botble\\Payment\\', platform_path('plugins/portfolio/src/Payment/'));
-        }
-
-        $this->app->singleton(\Botble\Payment\Supports\PaymentMethods::class, function () {
-            return new \Botble\Payment\Supports\PaymentMethods();
-        });
-
-        $constants = [
-            'PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS' => 'payment_filter_additional_payment_methods',
-            'PAYMENT_METHODS_SETTINGS_PAGE' => 'payment_methods_settings_page',
-            'PAYMENT_FILTER_PAYMENT_INFO_DETAIL' => 'payment_filter_payment_info_detail',
-            'PAYMENT_FILTER_AFTER_POST_CHECKOUT' => 'payment_filter_after_post_checkout',
-            'PAYMENT_FILTER_PAYMENT_DATA' => 'payment_filter_payment_data',
-            'PAYMENT_ACTION_PAYMENT_PROCESSED' => 'payment_action_payment_processed',
-            'PAYMENT_METHOD_SETTINGS_CONTENT' => 'payment_method_settings_content',
-        ];
-
-        foreach ($constants as $key => $value) {
-            if (! defined($key)) {
-                define($key, $value);
-            }
-        }
+        // PSR-4, constants và singleton cho Botble\Payment\ được quản lý bởi payment plugin
     }
 
     public function boot(): void

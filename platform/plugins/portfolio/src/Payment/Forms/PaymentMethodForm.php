@@ -2,6 +2,7 @@
 
 namespace Botble\Payment\Forms;
 
+use Botble\Base\Facades\Assets;
 use Botble\Base\Forms\FormAbstract;
 
 class PaymentMethodForm extends FormAbstract
@@ -11,6 +12,11 @@ class PaymentMethodForm extends FormAbstract
     protected string $paymentDescription;
     protected string $paymentLogo;
     protected string $paymentUrl;
+
+    public function setup(): void
+    {
+        Assets::addScriptsDirectly('vendor/core/plugins/payment/js/payment.js');
+    }
 
     public function paymentId(string $id): self
     {
