@@ -1,0 +1,25 @@
+[data-bs-theme="dark"] {
+    .newsletter-popup {
+        .newsletter-popup-content {
+            .form-label, .form-check-label {
+                color: #ffffff;
+            }
+
+            .form-control, .form-check-input {
+                border-color: var(--bs-secondary-color) !important;
+            }
+        }
+    }
+
+    .partner-item {
+        &.slick-slide {
+            img {
+                filter: invert(1);
+            }
+        }
+    }
+
+    .text-linear-1, .text-linear-2 {
+        -webkit-text-fill-color: unset;
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "id": "botble/infinia",
+    "name": "Infinia",
+    "namespace": "Theme\\Infinia\\",
+    "author": "Botble Technologies",
+    "url": "https://botble.com",
+    "version": "1.0.0",
+    "description": "Infinia - Multipurpose Business Startup Theme",
+    "required_plugins": []
+}
