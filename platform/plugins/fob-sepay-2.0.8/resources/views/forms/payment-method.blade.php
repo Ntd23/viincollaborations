@@ -21,12 +21,12 @@
                     <img src="{{ $logo }}" alt="{{ $name }}" style="width: 8rem">
                 </x-core::table.body.cell>
                 <x-core::table.body.cell>
-                    @if($url)
+                    @if ($url)
                         <a href="{{ $url }}" target="_blank">{{ $name }}</a>
                     @else
                         {{ $name }}
                     @endif
-                    @if($description)
+                    @if ($description)
                         <p class="mb-0">{{ $description }}</p>
                     @endif
                 </x-core::table.body.cell>
@@ -41,10 +41,16 @@
                             </div>
                         </div>
 
-                        <x-core::button @class(['toggle-payment-item edit-payment-item-btn-trigger', 'hidden' => !$status]) data-value="sepay">
+                        <x-core::button @class([
+                            'toggle-payment-item edit-payment-item-btn-trigger',
+                            'hidden' => !$status,
+                        ]) data-value="sepay">
                             {{ trans('plugins/payment::payment.edit') }}
                         </x-core::button>
-                        <x-core::button @class(['toggle-payment-item save-payment-item-btn-trigger', 'hidden' => $status]) data-value="sepay">
+                        <x-core::button @class([
+                            'toggle-payment-item save-payment-item-btn-trigger',
+                            'hidden' => $status,
+                        ]) data-value="sepay">
                             {{ trans('plugins/payment::payment.settings') }}
                         </x-core::button>
                     </div>
@@ -52,78 +58,99 @@
             </x-core::table.body.row>
             <x-core::table.body.row class="payment-content-item hidden">
                 <x-core::table.body.cell colspan="3">
-                    @if ($isConnected)
-                        @php
-                            $profile = $form->getData('profile');
-                        @endphp
+                    <x-core::form :url="route('portfolio.settings.payments.update')" method="post">
+                        <input type="hidden" name="type" value="{{ $id }}" class="payment_type" />
 
-                        @if($profile)
-                            <div
-                                class="sepay-connected-profile bg-body p-3 rounded mb-3"
-                                data-get-bank-sub-accounts-url="{{ route('sepay.bank-sub-accounts') }}"
-                                data-get-payment-codes-url="{{ route('sepay.payment-codes') }}"
-                                data-bank-sub-account-id="{{ get_payment_setting('bank_sub_account_id', SEPAY_PAYMENT_METHOD_NAME) }}"
-                                data-payment-code-prefix="{{ get_payment_setting('prefix', SEPAY_PAYMENT_METHOD_NAME) }}"
-                            >
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                    <span class="avatar avatar-lg" style="background-image: url({{ $profile->avatar }});"></span>
-                                    <div>
-                                        <h4 class="mb-1">
-                                            {{ $profile->last_name . ' ' . $profile->first_name }}
-                                            <span class="badge bg-success text-bg-success ms-2">Đã kết nối</span>
-                                        </h4>
-                                        <p class="d-flex align-items-center gap-1 text-muted mb-0 small">
-                                            <x-core::icon name="ti ti-id" />
-                                            ID: {{ $profile->id }}
-                                        </p>
+                        @if ($isConnected)
+                            @php
+                                $profile = $form->getData('profile');
+                            @endphp
+
+                            @if ($profile)
+                                <div class="sepay-connected-profile bg-body p-3 rounded mb-3"
+                                    data-get-bank-sub-accounts-url="{{ route('sepay.bank-sub-accounts') }}"
+                                    data-get-payment-codes-url="{{ route('sepay.payment-codes') }}"
+                                    data-bank-sub-account-id="{{ get_payment_setting('bank_sub_account_id', SEPAY_PAYMENT_METHOD_NAME) }}"
+                                    data-payment-code-prefix="{{ get_payment_setting('prefix', SEPAY_PAYMENT_METHOD_NAME) }}">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                        <span class="avatar avatar-lg"
+                                            style="background-image: url({{ $profile->avatar }});"></span>
+                                        <div>
+                                            <h4 class="mb-1">
+                                                {{ $profile->last_name . ' ' . $profile->first_name }}
+                                                <span class="badge bg-success text-bg-success ms-2">Đã kết nối</span>
+                                            </h4>
+                                            <p class="d-flex align-items-center gap-1 text-muted mb-0 small">
+                                                <x-core::icon name="ti ti-id" />
+                                                ID: {{ $profile->id }}
+                                            </p>
+                                        </div>
+                                        <div class="ms-0 ms-lg-auto">
+                                            <x-core::button type="button" color="danger" size="sm" outlined="true"
+                                                onclick="disconnectSepay()">
+                                                <x-core::icon name="ti ti-unlink" class="me-1" />
+                                                Ngắt kết nối tài khoản
+                                            </x-core::button>
+                                        </div>
                                     </div>
-                                    <div class="ms-0 ms-lg-auto">
-                                        <x-core::button type="button" color="danger" size="sm" outlined="true" onclick="disconnectSepay()">
-                                            <x-core::icon name="ti ti-unlink" class="me-1" />
-                                            Ngắt kết nối tài khoản
-                                        </x-core::button>
+
+                                    <div class="sepay-account-details">
+                                        <div class="d-flex flex-wrap gap-4">
+                                            <div class="d-flex align-items-center">
+                                                <x-core::icon name="ti ti-mail" class="text-muted" />
+                                                <span class="ms-2">{{ $profile->email }}</span>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <x-core::icon name="ti ti-phone" class="text-muted" />
+                                                <span class="ms-2">{{ $profile->phone }}</span>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <x-core::icon name="ti ti-calendar" class="text-muted" />
+                                                <span class="ms-2">{{ setting('sepay_connected_at') }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div class="sepay-account-details">
-                                    <div class="d-flex flex-wrap gap-4">
-                                        <div class="d-flex align-items-center">
-                                            <x-core::icon name="ti ti-mail" class="text-muted" />
-                                            <span class="ms-2">{{ $profile->email }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <x-core::icon name="ti ti-phone" class="text-muted" />
-                                            <span class="ms-2">{{ $profile->phone }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <x-core::icon name="ti ti-calendar" class="text-muted" />
-                                            <span class="ms-2">{{ setting('sepay_connected_at') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <x-core::form>
-                            <input type="hidden" name="type" value="{{ $id }}" class="payment_type" />
+                            @endif
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <x-core::form.text-input
-                                        :label="trans('plugins/payment::payment.method_name')"
-                                        :name="get_payment_setting_key('name', $id)"
-                                        data-counter="400"
-                                        :value="get_payment_setting('name', $id, trans('plugins/payment::payment.pay_online_via', ['name' => $name]))"
-                                    />
+                                    <div class="mb-3 border p-3 rounded bg-body">
+                                        <h4 class="mb-3 fw-bold">Cấu hình Custom OAuth (Tùy chọn)</h4>
+                                        <div class="mb-3">
+                                            <label class="form-label">SePay Client ID</label>
+                                            <input type="text" name="payment_sepay_client_id" class="form-control"
+                                                value="{{ get_payment_setting('client_id', $id) }}"
+                                                placeholder="Ví dụ: viincollaborations-GaQ9cRbr">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">SePay Client Secret</label>
+                                            <input type="password" name="payment_sepay_client_secret"
+                                                class="form-control"
+                                                value="{{ get_payment_setting('client_secret', $id) }}"
+                                                placeholder="Nhập Client Secret của bạn">
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label text-muted small">Redirect URI cần đăng ký trên
+                                                SePay:</label>
+                                            <input type="text"
+                                                class="form-control bg-light form-control-sm text-muted" readonly
+                                                value="{{ route('sepay.oauth.callback') }}">
+                                        </div>
+                                    </div>
 
-                                    <x-core::form.textarea
-                                        :label="trans('core/base::forms.description')"
-                                        :name="get_payment_setting_key('description', $id)"
-                                        :value="get_payment_setting('description', $id, $defaultDescriptionValue)"
-                                    />
+                                    <x-core::form.text-input :label="trans('plugins/payment::payment.method_name')" :name="get_payment_setting_key('name', $id)" data-counter="400"
+                                        :value="get_payment_setting(
+                                            'name',
+                                            $id,
+                                            trans('plugins/payment::payment.pay_online_via', ['name' => $name]),
+                                        )" />
+
+                                    <x-core::form.textarea :label="trans('core/base::forms.description')" :name="get_payment_setting_key('description', $id)" :value="get_payment_setting('description', $id, $defaultDescriptionValue)" />
 
                                     <x-core::form-group>
-                                        <x-core::form.label for="{{ $logoKey = get_payment_setting_key('logo', $id) }}">
+                                        <x-core::form.label
+                                            for="{{ $logoKey = get_payment_setting_key('logo', $id) }}">
                                             {{ trans('plugins/payment::payment.method_logo') }}
                                         </x-core::form.label>
                                         {{ Form::mediaImage($logoKey, get_payment_setting('logo', $id)) }}
@@ -144,60 +171,106 @@
                             </div>
 
                             <div class="btn-list justify-content-end">
-                                <x-core::button
-                                    type="button"
-                                    @class(['disable-payment-item', 'hidden' => !$status])
-                                >
+                                <x-core::button type="button" @class(['disable-payment-item', 'hidden' => !$status])>
                                     {{ trans('plugins/payment::payment.deactivate') }}
                                 </x-core::button>
 
-                                <x-core::button
-                                    @class(['save-payment-item btn-text-trigger-save', 'hidden' => $status])
-                                    type="button"
-                                    color="info"
-                                >
+                                <x-core::button @class([
+                                    'save-payment-item btn-text-trigger-save',
+                                    'hidden' => $status,
+                                ]) type="button" color="info">
                                     {{ trans('plugins/payment::payment.activate') }}
                                 </x-core::button>
-                                <x-core::button
-                                    type="button"
-                                    color="info"
-                                    @class(['save-payment-item btn-text-trigger-update', 'hidden' => !$status])
-                                >
+                                <x-core::button type="button" color="info" @class([
+                                    'save-payment-item btn-text-trigger-update',
+                                    'hidden' => !$status,
+                                ])>
                                     {{ trans('plugins/payment::payment.update') }}
                                 </x-core::button>
                             </div>
-                        </x-core::form>
-                    @else
-                        <div class="sepay-oauth-container">
-                            <div class="row align-items-center mb-4">
-                                <div class="col-md-4">
-                                    <img src="{{ asset('vendor/core/plugins/fob-sepay/screenshot.png') }}" alt="SePay" class="img-fluid rounded" />
+                        @else
+                            <div class="sepay-oauth-container">
+                                <div class="row align-items-center mb-4">
+                                    <div class="col-md-4">
+                                        <img src="{{ asset('vendor/core/plugins/fob-sepay/screenshot.png') }}"
+                                            alt="SePay" class="img-fluid rounded" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h3 class="mb-2 fw-bold text-primary">Kết nối với SePay</h3>
+                                        <p class="text-muted mb-0">Kết nối tài khoản SePay của bạn để bắt đầu nhận thanh
+                                            toán trực tuyến an toàn và thuận tiện.</p>
+                                    </div>
                                 </div>
-                                <div class="col-md-8">
-                                    <h3 class="mb-2 fw-bold text-primary">Kết nối với SePay</h3>
-                                    <p class="text-muted mb-0">Kết nối tài khoản SePay của bạn để bắt đầu nhận thanh toán trực tuyến an toàn và thuận tiện.</p>
-                                </div>
-                            </div>
 
-                            <div class="alert alert-info d-flex align-items-center mb-4">
-                                <x-core::icon name="ti ti-info-circle" class="me-3 fs-4" />
-                                <div>
-                                    Bạn cần có tài khoản SePay để tiếp tục. Sau khi kết nối, bạn có thể cấu hình thêm các tùy chọn thanh toán.
+                                <div class="bg-body p-3 rounded mb-4 border text-start">
+                                    <h4 class="mb-2 fw-bold text-dark">Cấu hình Custom OAuth (Tùy chọn)</h4>
+                                    <p class="text-muted small mb-3">Nếu bạn muốn sử dụng ứng dụng OAuth riêng của mình
+                                        thay vì qua cổng mặc định, hãy nhập Client ID và Client Secret ở đây, nhấn
+                                        <strong>Lưu cài đặt Custom OAuth</strong> bên dưới, sau đó nhấn <strong>Kết nối
+                                            với SePay</strong>.</p>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">SePay Client ID</label>
+                                        <input type="text" name="payment_sepay_client_id" class="form-control"
+                                            value="{{ get_payment_setting('client_id', $id) }}"
+                                            placeholder="Ví dụ: viincollaborations-GaQ9cRbr">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">SePay Client Secret</label>
+                                        <input type="password" name="payment_sepay_client_secret"
+                                            class="form-control"
+                                            value="{{ get_payment_setting('client_secret', $id) }}"
+                                            placeholder="Nhập Client Secret của bạn">
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label text-muted small">Redirect URI cần đăng ký trên
+                                            SePay:</label>
+                                        <input type="text" class="form-control bg-light form-control-sm text-muted"
+                                            readonly value="{{ route('sepay.oauth.callback') }}">
+                                    </div>
+                                </div>
+
+                                @if (str_contains(request()->getHost(), 'test') || str_contains(request()->getHost(), 'localhost') || str_contains(request()->getHost(), '127.0.0.1'))
+                                    <div class="mb-4 text-start mx-auto shadow-sm" style="max-width: 550px;">
+                                        <div class="border p-3 rounded bg-light">
+                                            <h5 class="fw-bold text-warning d-flex align-items-center mb-1 fs-6">
+                                                <x-core::icon name="ti ti-alert-triangle" class="me-2 text-warning fs-5" />
+                                                Bypass kết nối OAuth trên Local
+                                            </h5>
+                                            <p class="mb-2 text-muted small" style="line-height: 1.35;">
+                                                Sau khi xác thực ở popup và trình duyệt chuyển hướng về link live, hãy <strong>copy toàn bộ URL</strong> trên thanh địa chỉ và dán vào ô dưới đây để liên kết thủ công.
+                                            </p>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" id="sepay_manual_callback_url" class="form-control form-control-sm" placeholder="Dán link callback live vào đây (ví dụ: https://viincollaborations.com/sepay/oauth/callback?code=...)">
+                                                <x-core::button type="button" color="warning" size="sm" onclick="manualConnectSepay()">
+                                                    Kết nối thủ công
+                                                </x-core::button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="alert alert-info d-flex align-items-center mb-4">
+                                    <x-core::icon name="ti ti-info-circle" class="me-3 fs-4" />
+                                    <div>
+                                        Bạn cần có tài khoản SePay để tiếp tục. Sau khi cấu hình Custom OAuth (nếu
+                                        dùng), hãy nhấn **Lưu cài đặt Custom OAuth** trước khi nhấn kết nối.
+                                    </div>
+                                </div>
+
+                                <div class="text-center mb-4">
+                                    <x-core::button type="button" @class(['save-payment-item btn-text-trigger-save', 'me-2']) color="info">
+                                        Lưu cài đặt Custom OAuth
+                                    </x-core::button>
+
+                                    <x-core::button type="button" onclick="openSepayOAuth()" color="primary">
+                                        <x-core::icon name="ti ti-link" class="me-2" />
+                                        Kết nối với SePay ngay
+                                    </x-core::button>
                                 </div>
                             </div>
-
-                            <div class="text-center mb-4">
-                                <x-core::button
-                                    type="button"
-                                    onclick="openSepayOAuth()"
-                                    color="primary"
-                                >
-                                    <x-core::icon name="ti ti-link" class="me-2" />
-                                    Kết nối với SePay ngay
-                                </x-core::button>
-                            </div>
-                        </div>
-                    @endif
+                        @endif
+                    </x-core::form>
                 </x-core::table.body.cell>
             </x-core::table.body.row>
         </x-core::table.body>
@@ -240,5 +313,34 @@
                 }
             });
         }
+    }
+
+    function manualConnectSepay() {
+        const callbackUrl = $('#sepay_manual_callback_url').val().trim();
+        if (!callbackUrl) {
+            alert('Vui lòng dán URL Callback từ trình duyệt vào ô trống.');
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route('sepay.oauth.manual-connect') }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                callback_url: callbackUrl
+            },
+            success: function(response) {
+                if (response.error) {
+                    alert(response.message);
+                } else {
+                    alert(response.message);
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                alert(response && response.message ? response.message : 'Đã xảy ra lỗi khi kết nối thủ công.');
+            }
+        });
     }
 </script>

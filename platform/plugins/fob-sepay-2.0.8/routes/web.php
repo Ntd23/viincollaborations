@@ -20,6 +20,9 @@ Route::prefix('sepay')->name('sepay.')->group(function () {
     Route::post('oauth/disconnect', [OAuthController::class, 'disconnect'])
         ->name('oauth.disconnect');
 
+    Route::post('oauth/manual-connect', [OAuthController::class, 'manualConnect'])
+        ->name('oauth.manual-connect');
+
     Route::post('webhook', [WebhookController::class, '__invoke'])
         ->name('webhook')
         ->middleware(SePayProtector::class);

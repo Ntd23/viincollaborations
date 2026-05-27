@@ -1,0 +1,10 @@
+{
+    "name": "Payment",
+    "namespace": "Botble\\Payment\\",
+    "provider": "Botble\\Payment\\Providers\\PaymentServiceProvider",
+    "author": "Botble Technologies",
+    "url": "https://botble.com",
+    "version": "1.0.0",
+    "description": "Payment gateway manager (mock layer for Portfolio plugin)",
+    "minimum_core_version": "6.0.0"
+}
