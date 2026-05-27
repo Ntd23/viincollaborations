@@ -1,0 +1,11 @@
+{
+    "id": "botble/package-purchase",
+    "name": "Package Purchase",
+    "namespace": "Botble\\PackagePurchase\\",
+    "provider": "Botble\\PackagePurchase\\Providers\\PackagePurchaseServiceProvider",
+    "author": "Botble Technologies",
+    "url": "https://botble.com",
+    "version": "1.0.0",
+    "description": "Customer accounts and package purchase orders for service package websites.",
+    "minimum_core_version": "7.3.0"
+}
