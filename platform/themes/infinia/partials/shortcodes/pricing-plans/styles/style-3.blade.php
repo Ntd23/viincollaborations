@@ -1,3 +1,36 @@
+{{-- English description: Renders pricing plan cards with package consultation language options. --}}
+
+@once
+    <style>
+        .package-consultation-btn,
+        .package-consultation-btn:hover,
+        .package-consultation-btn:focus,
+        .package-consultation-btn:active {
+            transform: none !important;
+        }
+    </style>
+@endonce
+
+@php
+    $parsePackagePrice = static function ($price): float {
+        if (function_exists('package_purchase_parse_price')) {
+            return package_purchase_parse_price($price);
+        }
+
+        $normalized = preg_replace('/[^0-9.\-]/', '', (string) $price);
+
+        return $normalized ? (float) $normalized : 0.0;
+    };
+
+    $formatPackagePrice = static function ($price) use ($parsePackagePrice): string {
+        if ($parsePackagePrice($price) <= 0) {
+            return __('Free');
+        }
+
+        return function_exists('package_purchase_format_price') ? package_purchase_format_price($price) : (string) $price;
+    };
+@endphp
+
 <section {!! $shortcode->htmlAttributes() !!} class="section-pricing-2 position-relative fix section-padding">
     <div class="container position-relative z-2">
         <div class="text-center mb-8">
@@ -25,6 +58,11 @@
         </div>
         <div class="row justify-content-center align-items-center">
             @foreach($packages as $package)
+                @php
+                    $monthlyPriceAmount = $parsePackagePrice($package->price);
+                    $monthlyPriceLabel = $formatPackagePrice($package->price);
+                    $annualPriceLabel = $formatPackagePrice($package->annual_price);
+                @endphp
                 <div @class(['col-md-12 px-lg-0 mb-lg-0 mb-4', 'col-lg-3' => !$package->is_popular, 'col-lg-4 rounded-4' => $package->is_popular])>
                     <div @class(['pricing-plan-item position-relative border rounded-4 z-1',
                         'rounded-end-lg-0' => ! $loop->last && !$package->is_popular,
@@ -48,15 +86,15 @@
                         @endif
                         <div @class(['mt-3 mb-0 d-flex', 'text-primary' => !$package->is_popular, 'text-white' => $package->is_popular])>
                             @if (! $package->is_popular)
-                                <h4 class="text-primary mb-0 text-price-enterprise" data-annual-price="{{ $package->annual_price == 0 ? __('Free') : $package->annual_price }}" data-monthly-price="{{ $package->price == 0 ? __('Free') : $package->price }}">
-                                    {{ $package->price == 0 ? __('Free') : $package->price }}
+                                <h4 class="text-primary mb-0 text-price-enterprise" data-annual-price="{{ $annualPriceLabel }}" data-monthly-price="{{ $monthlyPriceLabel }}">
+                                    {{ $monthlyPriceLabel }}
                                 </h4>
                             @else
-                                <h4 class="mb-0 text-price-enterprise text-white" data-annual-price="{{ $package->annual_price == 0 ? __('Free') : $package->annual_price }}" data-monthly-price="{{ $package->price == 0 ? __('Free') : $package->price }}">
-                                    {{ $package->price == 0 ? __('Free') : $package->price }}
+                                <h4 class="mb-0 text-price-enterprise text-white" data-annual-price="{{ $annualPriceLabel }}" data-monthly-price="{{ $monthlyPriceLabel }}">
+                                    {{ $monthlyPriceLabel }}
                                 </h4>
                             @endif
-                            @if ($package->price != 0)
+                            @if ($monthlyPriceAmount > 0)
                                 <span @class(['ms-1 fw-bold align-self-end text-type-enterprise', 'text-white fs-5' => $package->is_popular, 'text-600 fs-5' => ! $package->is_popular]) data-annual-duration="{{ __('Year') }}" data-monthly-duration="{{ $package->duration->label() }}">
                                     /{{ $package->duration->label() }}
                                 </span>
@@ -65,12 +103,28 @@
 
 
                         @if (!$package->is_popular && ($actionLabel = $package->action_label) && ($actionUrl = $package->action_url))
-                            <a href="{{ $actionUrl }}" class="btn btn-outline-secondary hover-up w-100 d-flex justify-content-between my-5">
-                                {!! BaseHelper::clean($actionLabel) !!}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
-                                </svg>
-                            </a>
+                            @if (function_exists('package_purchase_checkout_url') && function_exists('package_purchase_consultation_languages'))
+                                <div class="my-5">
+                                    <span class="d-block fs-7 fw-bold text-600 mb-2">{{ trans('plugins/package-purchase::package-purchase.consultation_language.choose') }}</span>
+                                    <div class="d-grid gap-2">
+                                        @foreach (package_purchase_consultation_languages() as $language => $label)
+                                            <a href="{{ package_purchase_checkout_url($package, $language) }}" class="package-consultation-btn btn btn-outline-secondary w-100 d-flex justify-content-between">
+                                                {{ $label }}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                    <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
+                                                </svg>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <a href="{{ $actionUrl }}" class="btn btn-outline-secondary hover-up w-100 d-flex justify-content-between my-5">
+                                    {!! BaseHelper::clean($actionLabel) !!}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
+                                    </svg>
+                                </a>
+                            @endif
                         @endif
 
                         <ul @class(['list-unstyled mb-0', 'mt-3' => $package->is_popular])>
@@ -86,12 +140,28 @@
                         </ul>
 
                         @if ($package->is_popular && ($actionLabel = $package->action_label) && ($actionUrl = $package->action_url))
-                            <a href="{{ $actionUrl }}" class="btn bg-white-keep text-primary hover-up w-100 d-flex justify-content-between mt-5">
-                                {!! BaseHelper::clean($actionLabel) !!}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
-                                </svg>
-                            </a>
+                            @if (function_exists('package_purchase_checkout_url') && function_exists('package_purchase_consultation_languages'))
+                                <div class="mt-5">
+                                    <span class="d-block fs-7 fw-bold text-white mb-2">{{ trans('plugins/package-purchase::package-purchase.consultation_language.choose') }}</span>
+                                    <div class="d-grid gap-2">
+                                        @foreach (package_purchase_consultation_languages() as $language => $label)
+                                            <a href="{{ package_purchase_checkout_url($package, $language) }}" class="package-consultation-btn btn bg-white-keep text-primary w-100 d-flex justify-content-between">
+                                                {{ $label }}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                    <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
+                                                </svg>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <a href="{{ $actionUrl }}" class="btn bg-white-keep text-primary hover-up w-100 d-flex justify-content-between mt-5">
+                                    {!! BaseHelper::clean($actionLabel) !!}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
+                                    </svg>
+                                </a>
+                            @endif
                         @endif
 
                         @if($package->is_popular)
