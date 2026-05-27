@@ -124,9 +124,21 @@ class SePayClient
             throw new Exception('Refresh token not found. Please reconnect your SePay account.');
         }
 
-        $response = Http::post(SEPAY_FOB_URL . '/oauth/sepay/token', [
-            'refresh_token' => $refreshToken,
-        ]);
+        $clientId = get_payment_setting('client_id', 'sepay');
+        $clientSecret = get_payment_setting('client_secret', 'sepay');
+
+        if ($clientId && $clientSecret) {
+            $response = Http::asForm()->post('https://my.sepay.vn/oauth/token', [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refreshToken,
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+            ]);
+        } else {
+            $response = Http::post(SEPAY_FOB_URL . '/oauth/sepay/token', [
+                'refresh_token' => $refreshToken,
+            ]);
+        }
 
         $data = $response->json();
 

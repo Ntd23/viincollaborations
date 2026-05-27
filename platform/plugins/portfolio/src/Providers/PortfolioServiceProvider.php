@@ -104,15 +104,6 @@ class PortfolioServiceProvider extends ServiceProvider
                     'url' => route('portfolio.packages.index'),
                 ])
                 ->registerItem([
-                    'id' => 'cms-core-portfolio-package-orders',
-                    'priority' => 4.5,
-                    'parent_id' => 'cms-core-portfolio',
-                    'name' => 'Đơn hàng',
-                    'icon' => 'ti ti-shopping-cart',
-                    'permissions' => ['portfolio.package-orders.index'],
-                    'url' => route('portfolio.package-orders.index'),
-                ])
-                ->registerItem([
                     'id' => 'cms-core-portfolio-payment-settings',
                     'priority' => 4.6,
                     'parent_id' => 'cms-core-portfolio',
@@ -160,35 +151,7 @@ class PortfolioServiceProvider extends ServiceProvider
 
         FormFrontManager::register(QuotationForm::class, QuoteRequest::class);
 
-        // Đăng ký lắng nghe sự kiện xử lý thanh toán thành công từ Mock Payment
-        $this->app->booted(function () {
-            if (defined('PAYMENT_ACTION_PAYMENT_PROCESSED')) {
-                add_action(PAYMENT_ACTION_PAYMENT_PROCESSED, function (array $paymentData) {
-                    $orderId = data_get($paymentData, 'order_id');
-                    
-                    $order = \Botble\Portfolio\Models\PackageOrder::query()->find($orderId);
-                    if ($order && $order->status !== 'completed') {
-                        $order->update([
-                            'status' => 'completed',
-                        ]);
-
-                        // Gửi email thông báo cho Admin và khách hàng
-                        try {
-                            \Botble\Base\Facades\EmailHandler::setModule('portfolio')
-                                ->setVariableValues([
-                                    'site_name' => config('app.name'),
-                                    'contact_name' => $order->name,
-                                    'contact_email' => $order->email,
-                                    'contact_message' => "Khách hàng {$order->name} đã thanh toán thành công gói dịch vụ: {$order->package_name} (Số tiền: " . number_format($order->amount) . " VND, Mã giao dịch: {$order->payment_code}).",
-                                ])
-                                ->sendUsingTemplate('quote-request-notice');
-                        } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error('Portfolio Payment Success Webhook Send Email Error: ' . $e->getMessage());
-                        }
-                    }
-                });
-            }
-        });
+        
     }
 
     protected function registerSlugHelper(): self

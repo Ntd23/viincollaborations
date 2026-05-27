@@ -3,10 +3,7 @@
 use Botble\Base\Facades\AdminHelper;
 use Botble\Portfolio\Http\Controllers\CustomFieldController;
 use Botble\Portfolio\Http\Controllers\PackageController;
-use Botble\Portfolio\Http\Controllers\PackageOrderController;
 use Botble\Portfolio\Http\Controllers\Settings\SePaySettingController;
-use Botble\Portfolio\Http\Controllers\CheckoutController;
-use Botble\Portfolio\Http\Controllers\OAuthController;
 use Botble\Portfolio\Http\Controllers\ProjectController;
 use Botble\Portfolio\Http\Controllers\PublicController;
 use Botble\Portfolio\Http\Controllers\QuotationRequestController;
@@ -35,13 +32,9 @@ AdminHelper::registerRoutes(function (): void {
             Route::resource('', PackageController::class)->parameters(['' => 'package']);
         });
 
-        Route::group(['prefix' => 'package-orders', 'as' => 'package-orders.'], function (): void {
-            Route::resource('', PackageOrderController::class)->parameters(['' => 'package-order'])->only(['index', 'edit', 'update', 'destroy']);
-        });
-
         Route::group(['prefix' => 'settings', 'as' => 'settings.'], function (): void {
             Route::get('payments', [\Botble\Portfolio\Http\Controllers\Settings\PaymentSettingController::class, 'edit'])->name('payments');
-            Route::post('payments', [\Botble\Portfolio\Http\Controllers\Settings\PaymentSettingController::class, 'update'])->name('payments.update');
+            Route::match(['POST', 'PUT'], 'payments', [\Botble\Portfolio\Http\Controllers\Settings\PaymentSettingController::class, 'update'])->name('payments.update');
         });
 
         Route::group(['prefix' => 'projects', 'as' => 'projects.'], function (): void {
@@ -81,12 +74,5 @@ Theme::registerRoutes(function (): void {
 
     Route::prefix('portfolio')->name('portfolio.')->group(function (): void {
         Route::post('request-quote', [PublicController::class, 'storeQuote'])->name('request-quote');
-
-        Route::get('checkout/{package}', [CheckoutController::class, 'checkoutForm'])->name('package.checkout');
-        Route::post('checkout', [CheckoutController::class, 'postCheckout'])->name('package.checkout.post');
-        Route::get('checkout/payment/{order}', [CheckoutController::class, 'payment'])->name('package.checkout.payment');
-        Route::get('checkout/check-status/{order}', [CheckoutController::class, 'checkStatus'])->name('package.checkout.check-status');
-        Route::get('checkout/success/{order}', [CheckoutController::class, 'success'])->name('package.checkout.success');
     });
 });
-

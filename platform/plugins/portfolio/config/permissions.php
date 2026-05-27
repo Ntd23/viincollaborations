@@ -132,22 +132,6 @@ return [
     ],
 
     [
-        'name' => 'Package Orders',
-        'flag' => 'portfolio.package-orders.index',
-        'parent_id' => 'plugins.portfolio',
-    ],
-    [
-        'name' => 'Edit',
-        'flag' => 'portfolio.package-orders.edit',
-        'parent_flag' => 'portfolio.package-orders.index',
-    ],
-    [
-        'name' => 'Delete',
-        'flag' => 'portfolio.package-orders.destroy',
-        'parent_flag' => 'portfolio.package-orders.index',
-    ],
-
-    [
         'name' => 'SePay Settings',
         'flag' => 'portfolio.settings.sepay',
         'parent_id' => 'plugins.portfolio',

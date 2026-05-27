@@ -59,7 +59,7 @@
                             @endif
                         </div>
                         @if($package->action_label)
-                            <a href="{{ (!$package->action_url || $package->action_url == '#') ? route('portfolio.package.checkout', $package->id) : $package->action_url }}" @class(['btn w-100 d-flex justify-content-between my-5', 'btn-outline-secondary hover-up' => ! $package->is_popular, 'btn-gradient' => $package->is_popular])>
+                            <a href="{{ $package->action_url ?: '#' }}" @class(['btn w-100 d-flex justify-content-between my-5', 'btn-outline-secondary hover-up' => ! $package->is_popular, 'btn-gradient' => $package->is_popular])>
                                 {{ $package->action_label }}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path @class(['fill-dark' => ! $package->is_popular, 'fill-white' => $package->is_popular]) d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
