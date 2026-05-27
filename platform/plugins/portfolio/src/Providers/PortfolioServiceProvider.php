@@ -28,6 +28,11 @@ class PortfolioServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
+    public function register(): void
+    {
+        // PSR-4, constants và singleton cho Botble\Payment\ được quản lý bởi payment plugin
+    }
+
     public function boot(): void
     {
         $this
@@ -36,11 +41,20 @@ class PortfolioServiceProvider extends ServiceProvider
             ->loadAndPublishTranslations()
             ->loadAndPublishViews()
             ->loadRoutes()
+            ->loadHelpers()
             ->loadMigrations()
             ->publishAssets()
             ->registerSlugHelper()
             ->registerSeoHelper()
             ->registerLanguage();
+
+        // Nạp bản dịch và view cho mock payment
+        $this->loadTranslationsFrom(platform_path('plugins/portfolio/resources/lang/payment'), 'plugins/payment');
+        $this->loadViewsFrom(platform_path('plugins/portfolio/resources/views/payment'), 'plugins/payment');
+
+        // Đăng ký anonymous component cho <x-plugins-payment::payment-method>
+        \Illuminate\Support\Facades\Blade::anonymousComponentPath(platform_path('plugins/portfolio/resources/views/payment/components'), 'plugins-payment');
+        \Illuminate\Support\Facades\Blade::componentNamespace('Botble\\Payment\\Views\\Components', 'plugins-payment');
 
         $this->app->register(EventServiceProvider::class);
 
@@ -90,6 +104,15 @@ class PortfolioServiceProvider extends ServiceProvider
                     'url' => route('portfolio.packages.index'),
                 ])
                 ->registerItem([
+                    'id' => 'cms-core-portfolio-payment-settings',
+                    'priority' => 4.6,
+                    'parent_id' => 'cms-core-portfolio',
+                    'name' => 'Cấu hình Thanh toán',
+                    'icon' => 'ti ti-credit-card',
+                    'permissions' => ['portfolio.settings.payments'],
+                    'url' => route('portfolio.settings.payments'),
+                ])
+                ->registerItem([
                     'id' => 'cms-core-portfolio-quotation-requests',
                     'priority' => 5,
                     'parent_id' => 'cms-core-portfolio',
@@ -127,6 +150,8 @@ class PortfolioServiceProvider extends ServiceProvider
         });
 
         FormFrontManager::register(QuotationForm::class, QuoteRequest::class);
+
+        
     }
 
     protected function registerSlugHelper(): self

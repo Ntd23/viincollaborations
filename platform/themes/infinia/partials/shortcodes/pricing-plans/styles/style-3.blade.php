@@ -64,8 +64,11 @@
                         </div>
 
 
-                        @if (!$package->is_popular && ($actionLabel = $package->action_label) && ($actionUrl = $package->action_url))
-                            <a href="{{ $actionUrl }}" class="btn btn-outline-secondary hover-up w-100 d-flex justify-content-between my-5">
+                        @if (!$package->is_popular && ($actionLabel = $package->action_label))
+                            @php
+                                $actionUrl = $package->action_url;
+                            @endphp
+                            <a href="{{ $actionUrl ?: '#' }}" class="btn btn-outline-secondary hover-up w-100 d-flex justify-content-between my-5">
                                 {!! BaseHelper::clean($actionLabel) !!}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />
@@ -85,8 +88,11 @@
                             @endforeach
                         </ul>
 
-                        @if ($package->is_popular && ($actionLabel = $package->action_label) && ($actionUrl = $package->action_url))
-                            <a href="{{ $actionUrl }}" class="btn bg-white-keep text-primary hover-up w-100 d-flex justify-content-between mt-5">
+                        @if ($package->is_popular && ($actionLabel = $package->action_label))
+                            @php
+                                $actionUrl = $package->action_url;
+                            @endphp
+                            <a href="{{ $actionUrl ?: '#' }}" class="btn bg-white-keep text-primary hover-up w-100 d-flex justify-content-between mt-5">
                                 {!! BaseHelper::clean($actionLabel) !!}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path class="fill-dark" d="M17.4177 5.41797L16.3487 6.48705L21.1059 11.2443H0V12.7562H21.1059L16.3487 17.5134L17.4177 18.5825L24 12.0002L17.4177 5.41797Z" fill="#111827" />

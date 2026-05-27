@@ -3,6 +3,7 @@
 use Botble\Base\Facades\AdminHelper;
 use Botble\Portfolio\Http\Controllers\CustomFieldController;
 use Botble\Portfolio\Http\Controllers\PackageController;
+use Botble\Portfolio\Http\Controllers\Settings\SePaySettingController;
 use Botble\Portfolio\Http\Controllers\ProjectController;
 use Botble\Portfolio\Http\Controllers\PublicController;
 use Botble\Portfolio\Http\Controllers\QuotationRequestController;
@@ -15,6 +16,7 @@ use Botble\Portfolio\Models\ServiceCategory;
 use Botble\Slug\Facades\SlugHelper;
 use Botble\Theme\Facades\Theme;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 AdminHelper::registerRoutes(function (): void {
     Route::prefix('portfolio')->name('portfolio.')->group(function (): void {
@@ -28,6 +30,11 @@ AdminHelper::registerRoutes(function (): void {
 
         Route::group(['prefix' => 'packages', 'as' => 'packages.'], function (): void {
             Route::resource('', PackageController::class)->parameters(['' => 'package']);
+        });
+
+        Route::group(['prefix' => 'settings', 'as' => 'settings.'], function (): void {
+            Route::get('payments', [\Botble\Portfolio\Http\Controllers\Settings\PaymentSettingController::class, 'edit'])->name('payments');
+            Route::match(['POST', 'PUT'], 'payments', [\Botble\Portfolio\Http\Controllers\Settings\PaymentSettingController::class, 'update'])->name('payments.update');
         });
 
         Route::group(['prefix' => 'projects', 'as' => 'projects.'], function (): void {

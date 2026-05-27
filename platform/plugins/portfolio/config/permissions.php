@@ -130,4 +130,10 @@ return [
         'flag' => 'portfolio.custom-fields.destroy',
         'parent_flag' => 'portfolio.custom-fields.index',
     ],
+
+    [
+        'name' => 'SePay Settings',
+        'flag' => 'portfolio.settings.sepay',
+        'parent_id' => 'plugins.portfolio',
+    ],
 ];
