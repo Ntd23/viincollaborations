@@ -41,6 +41,8 @@ class OrderTable extends TableAbstract
                 FormattedColumn::make('consultation_language')
                     ->title(trans('plugins/package-purchase::package-purchase.order.consultation_language'))
                     ->renderUsing(fn (FormattedColumn $column) => e(package_purchase_consultation_language_label($column->getValue()))),
+                Column::make('customer_whatsapp_phone')
+                    ->title(trans('plugins/package-purchase::package-purchase.order.customer_whatsapp_phone')),
                 FormattedColumn::make('amount')
                     ->title(trans('plugins/package-purchase::package-purchase.order.amount'))
                     ->renderUsing(fn (FormattedColumn $column) => e(package_purchase_format_price($column->getValue(), $column->getItem()->currency))),
@@ -60,6 +62,7 @@ class OrderTable extends TableAbstract
                         'package_orders.id',
                         'package_orders.package_name',
                         'package_orders.consultation_language',
+                        'package_orders.customer_whatsapp_phone',
                         'package_orders.amount',
                         'package_orders.currency',
                         'package_orders.payment_amount',

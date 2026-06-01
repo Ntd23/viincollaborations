@@ -113,6 +113,17 @@
                                 </div>
                             @endif
 
+                            @if ($bankAccountsError = $form->getData('bank_accounts_error'))
+                                <div class="alert alert-warning mb-3">
+                                    <div class="fw-semibold mb-1">Không thể tải danh sách tài khoản ngân hàng SePay.</div>
+                                    <div class="small mb-2">{{ $bankAccountsError }}</div>
+                                    <div class="small">
+                                        Vui lòng ngắt kết nối rồi kết nối lại SePay để cấp quyền
+                                        <code>bank-account:read</code>, <code>webhook:read</code>, <code>webhook:write</code>.
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3 border p-3 rounded bg-body">

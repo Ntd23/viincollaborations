@@ -1,5 +1,7 @@
 <?php
 
+// English description: Represents a portfolio service package and its checkout configuration.
+
 namespace Botble\Portfolio\Models;
 
 use Botble\Base\Enums\BaseStatusEnum;
@@ -22,6 +24,8 @@ class Package extends BaseModel
         'status',
         'is_popular',
         'action_url',
+        'whatsapp_phone_vi',
+        'whatsapp_phone_en',
         'action_label',
         'order',
     ];

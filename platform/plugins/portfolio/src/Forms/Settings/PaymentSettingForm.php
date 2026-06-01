@@ -1,13 +1,12 @@
 <?php
 
+// English description: Builds the portfolio payment settings form and safely loads payment method settings.
+
 namespace Botble\Portfolio\Forms\Settings;
 
 use Botble\Base\Forms\FieldOptions\HtmlFieldOption;
-use Botble\Base\Forms\FieldOptions\OnOffFieldOption;
 use Botble\Base\Forms\Fields\HtmlField;
-use Botble\Base\Forms\Fields\OnOffCheckboxField;
 use Botble\Portfolio\Http\Requests\Settings\PaymentSettingRequest;
-use Botble\Portfolio\Supports\PortfolioPayment;
 use Botble\Setting\Forms\SettingForm;
 
 class PaymentSettingForm extends SettingForm
@@ -21,7 +20,11 @@ class PaymentSettingForm extends SettingForm
             ->setSectionDescription('Quản lý và kích hoạt các phương thức thanh toán cho gói dịch vụ Portfolio.')
             ->setValidatorClass(PaymentSettingRequest::class);
 
-        $settingsHtml = apply_filters(PAYMENT_METHODS_SETTINGS_PAGE, '');
+        $settingsPageFilter = defined('PAYMENT_METHODS_SETTINGS_PAGE')
+            ? constant('PAYMENT_METHODS_SETTINGS_PAGE')
+            : 'payment_methods_settings_page';
+
+        $settingsHtml = apply_filters($settingsPageFilter, '');
 
         if (empty($settingsHtml)) {
             $this->add(

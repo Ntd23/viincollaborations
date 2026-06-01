@@ -27,6 +27,16 @@
     </x-core::datagrid.item>
 
     <x-core::datagrid.item>
+        <x-slot:title>{{ trans('plugins/package-purchase::package-purchase.order.customer_whatsapp_phone') }}</x-slot:title>
+        {{ $order->customer_whatsapp_phone ?: '...' }}
+    </x-core::datagrid.item>
+
+    <x-core::datagrid.item>
+        <x-slot:title>{{ trans('plugins/package-purchase::package-purchase.order.whatsapp_notification_status') }}</x-slot:title>
+        {{ $order->whatsapp_notification_status ?: '...' }}
+    </x-core::datagrid.item>
+
+    <x-core::datagrid.item>
         <x-slot:title>{{ trans('plugins/package-purchase::package-purchase.order.payment_reference') }}</x-slot:title>
         {{ $order->payment_reference ?: '...' }}
     </x-core::datagrid.item>

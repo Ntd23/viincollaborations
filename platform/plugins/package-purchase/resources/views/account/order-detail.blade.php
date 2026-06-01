@@ -45,6 +45,10 @@
                     <strong class="d-block fs-5">{{ package_purchase_consultation_language_label($order->consultation_language) }}</strong>
                 </div>
                 <div class="col-md-6">
+                    <span class="text-muted text-uppercase small">{{ trans('plugins/package-purchase::package-purchase.order.customer_whatsapp_phone') }}</span>
+                    <strong class="d-block fs-5">{{ $order->customer_whatsapp_phone }}</strong>
+                </div>
+                <div class="col-md-6">
                     <span class="text-muted text-uppercase small">{{ trans($lang . 'payment_status') }}</span>
                     <div>{!! $order->payment_status->toHtml() !!}</div>
                 </div>

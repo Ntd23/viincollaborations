@@ -1,5 +1,7 @@
 <?php
 
+// English description: Builds the admin form for portfolio service packages and WhatsApp consultation routing.
+
 namespace Botble\Portfolio\Forms;
 
 use Botble\Base\Forms\FieldOptions\ContentFieldOption;
@@ -80,6 +82,22 @@ class PackageForm extends FormAbstract
                 TextField::class,
                 TextFieldOption::make()
                     ->label(trans('plugins/portfolio::portfolio.form.action_url'))
+                    ->toArray()
+            )
+            ->add(
+                'whatsapp_phone_vi',
+                TextField::class,
+                TextFieldOption::make()
+                    ->label('WhatsApp phone for Vietnamese consultation')
+                    ->helperText('Used for paid notifications when the customer chooses Vietnamese consultation.')
+                    ->toArray()
+            )
+            ->add(
+                'whatsapp_phone_en',
+                TextField::class,
+                TextFieldOption::make()
+                    ->label('WhatsApp phone for English consultation')
+                    ->helperText('Used for paid notifications when the customer chooses English consultation.')
                     ->toArray()
             )
             ->add('is_popular', OnOffField::class, OnOffFieldOption::make()->label(trans('plugins/portfolio::portfolio.is_popular')))

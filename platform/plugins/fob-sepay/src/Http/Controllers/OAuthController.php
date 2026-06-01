@@ -1,5 +1,7 @@
 <?php
 
+// English description: Handles SePay OAuth connection, callback, and disconnection flows.
+
 namespace FriendsOfBotble\SePay\Http\Controllers;
 
 use Botble\Base\Http\Controllers\BaseController;
@@ -9,6 +11,11 @@ use Illuminate\Support\Facades\Cache;
 
 class OAuthController extends BaseController
 {
+    protected function scopes(): string
+    {
+        return 'profile bank-account:read transaction:read webhook:read webhook:write';
+    }
+
     public function connect()
     {
         $state = bin2hex(random_bytes(16));
@@ -28,6 +35,7 @@ class OAuthController extends BaseController
                 'response_type' => 'code',
                 'client_id' => $clientId,
                 'redirect_uri' => $redirectUri,
+                'scope' => $this->scopes(),
                 'state' => $state,
             ]);
 
@@ -36,6 +44,7 @@ class OAuthController extends BaseController
 
         $queryParams = http_build_query([
             'callback_url' => route('sepay.oauth.callback'),
+            'scope' => $this->scopes(),
             'state' => $state,
         ]);
 

@@ -22,6 +22,7 @@ class Order extends BaseModel
         'package_price',
         'duration',
         'consultation_language',
+        'customer_whatsapp_phone',
         'amount',
         'currency',
         'payment_amount',
@@ -32,6 +33,9 @@ class Order extends BaseModel
         'payment_method',
         'payment_reference',
         'paid_at',
+        'whatsapp_notified_at',
+        'whatsapp_notification_status',
+        'whatsapp_notification_error',
         'notes',
     ];
 
@@ -40,6 +44,7 @@ class Order extends BaseModel
         'package_price' => SafeContent::class,
         'duration' => SafeContent::class,
         'consultation_language' => SafeContent::class,
+        'customer_whatsapp_phone' => SafeContent::class,
         'amount' => 'decimal:2',
         'currency' => SafeContent::class,
         'payment_amount' => 'decimal:2',
@@ -50,6 +55,9 @@ class Order extends BaseModel
         'payment_method' => SafeContent::class,
         'payment_reference' => SafeContent::class,
         'paid_at' => 'datetime',
+        'whatsapp_notified_at' => 'datetime',
+        'whatsapp_notification_status' => SafeContent::class,
+        'whatsapp_notification_error' => SafeContent::class,
     ];
 
     public function customer(): BelongsTo

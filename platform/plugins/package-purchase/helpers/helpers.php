@@ -78,6 +78,23 @@ if (! function_exists('package_purchase_convert_usd_to_vnd')) {
     }
 }
 
+if (! function_exists('package_purchase_normalize_whatsapp_phone')) {
+    function package_purchase_normalize_whatsapp_phone(?string $phone, bool $stripPlus = false): ?string
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+
+        if (! $phone) {
+            return null;
+        }
+
+        return $stripPlus ? ltrim($phone, '+') : $phone;
+    }
+}
+
 if (! function_exists('package_purchase_order_code')) {
     function package_purchase_order_code(int|string $orderId): string
     {
@@ -88,11 +105,7 @@ if (! function_exists('package_purchase_order_code')) {
 if (! function_exists('package_purchase_sepay_bank_info')) {
     function package_purchase_sepay_bank_info(): array
     {
-        if (class_exists(\FriendsOfBotble\SePay\Services\BankService::class)) {
-            return app(\FriendsOfBotble\SePay\Services\BankService::class)->getBankInfo();
-        }
-
-        return [
+        $bankInfo = [
             'bank' => setting('payment_sepay_bank') ?? 'Vietcombank',
             'bankLogo' => setting('payment_sepay_bank_logo'),
             'bankShortName' => setting('payment_sepay_bank_short_name'),
@@ -100,6 +113,68 @@ if (! function_exists('package_purchase_sepay_bank_info')) {
             'bankAccountNumber' => setting('payment_sepay_bank_account_number'),
             'bankAccountHolder' => setting('payment_sepay_bank_account_holder'),
         ];
+
+        if (class_exists(\FriendsOfBotble\SePay\Services\BankService::class)) {
+            $bankInfo = app(\FriendsOfBotble\SePay\Services\BankService::class)->getBankInfo();
+        }
+
+        if (! empty($bankInfo['bankAccountNumber']) && ! empty($bankInfo['bankShortName'])) {
+            return $bankInfo;
+        }
+
+        if (! class_exists(\FriendsOfBotble\SePay\SePayClient::class)) {
+            return $bankInfo;
+        }
+
+        try {
+            $client = app(\FriendsOfBotble\SePay\SePayClient::class);
+
+            if (! $client->isConnected()) {
+                return $bankInfo;
+            }
+
+            $bankAccountId = function_exists('get_payment_setting')
+                ? get_payment_setting('bank_account_id', defined('SEPAY_PAYMENT_METHOD_NAME') ? SEPAY_PAYMENT_METHOD_NAME : 'sepay')
+                : null;
+            $bankAccount = $bankAccountId ? $client->bankAccount($bankAccountId) : null;
+
+            if (! $bankAccount) {
+                $bankAccounts = $client->bankAccounts();
+
+                if (count($bankAccounts) === 1) {
+                    $bankAccount = (object) $bankAccounts[0];
+                }
+            }
+
+            if (! $bankAccount) {
+                return $bankInfo;
+            }
+
+            $bank = (array) data_get($bankAccount, 'bank', []);
+            $bankInfo = [
+                'bank' => data_get($bank, 'brand_name') ?: data_get($bank, 'full_name') ?: $bankInfo['bank'],
+                'bankLogo' => data_get($bank, 'logo_url'),
+                'bankShortName' => data_get($bank, 'short_name'),
+                'bankBrandName' => data_get($bank, 'brand_name'),
+                'bankAccountNumber' => data_get($bankAccount, 'account_number'),
+                'bankAccountHolder' => data_get($bankAccount, 'account_holder_name'),
+            ];
+
+            if (! empty($bankInfo['bankAccountNumber']) && ! empty($bankInfo['bankShortName'])) {
+                setting()->set([
+                    'payment_sepay_bank' => $bankInfo['bank'],
+                    'payment_sepay_bank_short_name' => $bankInfo['bankShortName'],
+                    'payment_sepay_bank_brand_name' => $bankInfo['bankBrandName'],
+                    'payment_sepay_bank_account_number' => $bankInfo['bankAccountNumber'],
+                    'payment_sepay_bank_account_holder' => $bankInfo['bankAccountHolder'],
+                    'payment_sepay_bank_logo' => $bankInfo['bankLogo'],
+                ])->save();
+            }
+        } catch (Throwable) {
+            return $bankInfo;
+        }
+
+        return $bankInfo;
     }
 }
 

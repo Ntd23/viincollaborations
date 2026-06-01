@@ -1,5 +1,7 @@
 <?php
 
+// English description: Validates admin portfolio package fields including WhatsApp routing numbers.
+
 namespace Botble\Portfolio\Http\Requests;
 
 use Botble\Base\Enums\BaseStatusEnum;
@@ -29,7 +31,28 @@ class PackageRequest extends Request
             'is_popular' => new OnOffRule(),
             'action_label' => ['nullable', 'string', 'max:255'],
             'action_url' => ['nullable', 'string', 'max:255'],
+            'whatsapp_phone_vi' => ['nullable', 'string', 'max:50', 'regex:/^\+?[0-9\s().-]+$/'],
+            'whatsapp_phone_en' => ['nullable', 'string', 'max:50', 'regex:/^\+?[0-9\s().-]+$/'],
             'order' => ['required', 'numeric', 'min:0', 'max:99999'],
         ];
+    }
+
+    protected function passedValidation(): void
+    {
+        $this->merge([
+            'whatsapp_phone_vi' => $this->normalizePhone($this->input('whatsapp_phone_vi')),
+            'whatsapp_phone_en' => $this->normalizePhone($this->input('whatsapp_phone_en')),
+        ]);
+    }
+
+    protected function normalizePhone(?string $phone): ?string
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+
+        return $phone !== '' ? $phone : null;
     }
 }
