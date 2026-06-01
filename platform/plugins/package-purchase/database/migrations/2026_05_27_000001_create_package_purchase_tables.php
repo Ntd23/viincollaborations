@@ -32,6 +32,8 @@ return new class() extends Migration {
             $table->string('package_name');
             $table->string('package_price')->nullable();
             $table->string('duration', 60)->nullable();
+            $table->string('consultation_language', 10)->nullable();
+            $table->string('customer_whatsapp_phone', 50)->nullable();
             $table->decimal('amount', 15, 2)->default(0);
             $table->string('currency', 10)->default('USD');
             $table->decimal('payment_amount', 15, 2)->default(0);
@@ -42,6 +44,9 @@ return new class() extends Migration {
             $table->string('payment_method', 120)->nullable();
             $table->string('payment_reference')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->timestamp('whatsapp_notified_at')->nullable();
+            $table->string('whatsapp_notification_status', 30)->nullable();
+            $table->text('whatsapp_notification_error')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });

@@ -1,5 +1,7 @@
 <?php
 
+// English description: Registers SePay payment hooks and guards optional payment request integration.
+
 namespace FriendsOfBotble\SePay\Providers;
 
 use Botble\Base\Facades\BaseHelper;
@@ -7,14 +9,12 @@ use Botble\Ecommerce\Models\Order;
 use Botble\Payment\Enums\PaymentMethodEnum;
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Botble\Payment\Facades\PaymentMethods;
-use Botble\Payment\Http\Requests\PaymentMethodRequest;
 use Exception;
 use FriendsOfBotble\SePay\Forms\SePayPaymentMethodForm;
 use FriendsOfBotble\SePay\SePayClient;
 use FriendsOfBotble\SePay\Services\BankService;
 use FriendsOfBotble\SePay\Services\PaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rule;
@@ -161,7 +161,13 @@ class HookServiceProvider extends ServiceProvider
     protected function registerRequestRules(): void
     {
         add_filter('core_request_rules', function (array $rules, Request $request) {
-            if ($request instanceof PaymentMethodRequest && $request->post('type') === SEPAY_PAYMENT_METHOD_NAME) {
+            $paymentMethodRequestClass = 'Botble\\Payment\\Http\\Requests\\PaymentMethodRequest';
+
+            if (
+                class_exists($paymentMethodRequestClass)
+                && $request instanceof $paymentMethodRequestClass
+                && $request->post('type') === SEPAY_PAYMENT_METHOD_NAME
+            ) {
                 $rules = array_merge($rules, $this->getPaymentMethodRules($request));
             }
 
@@ -215,7 +221,6 @@ class HookServiceProvider extends ServiceProvider
                 'payment_sepay_prefix' => [
                     'required',
                     'string',
-                    Rule::in(array_column(Arr::get($client->company(), 'configurations.payment_code_formats'), 'prefix')),
                 ],
             ];
         } catch (Exception) {

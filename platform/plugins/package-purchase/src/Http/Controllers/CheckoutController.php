@@ -10,6 +10,7 @@ use Botble\PackagePurchase\Enums\OrderStatusEnum;
 use Botble\PackagePurchase\Enums\PaymentStatusEnum;
 use Botble\PackagePurchase\Models\Order;
 use Botble\Portfolio\Models\Package;
+use Botble\Theme\Facades\Theme;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,39 +21,59 @@ class CheckoutController extends BaseController
     {
         abort_if(! in_array($consultationLanguage, array_keys(package_purchase_consultation_languages()), true), 404);
 
-        return $this->createOrderAndRedirect($package, $consultationLanguage);
+        return redirect()->route('public.package-purchase.checkout', [
+            'package' => $package,
+            'consultation_language' => $consultationLanguage,
+        ]);
     }
 
-    public function show(Package $package, Request $request): RedirectResponse
+    public function show(Package $package, Request $request)
     {
         $data = $request->validate([
             'consultation_language' => ['required', Rule::in(array_keys(package_purchase_consultation_languages()))],
         ]);
 
-        return $this->createOrderAndRedirect($package, $data['consultation_language']);
+        abort_if($package->status->getValue() !== BaseStatusEnum::PUBLISHED, 404);
+
+        return Theme::of('plugins/package-purchase::checkout.show', [
+            'package' => $package,
+            'consultationLanguage' => $data['consultation_language'],
+        ])->render();
     }
 
     public function store(Package $package, Request $request): RedirectResponse
     {
         $data = $request->validate([
             'consultation_language' => ['required', Rule::in(array_keys(package_purchase_consultation_languages()))],
+            'customer_whatsapp_phone' => ['required', 'string', 'max:50', 'regex:/^\+?[0-9\s().-]+$/'],
         ]);
+        $customerWhatsappPhone = package_purchase_normalize_whatsapp_phone($data['customer_whatsapp_phone']);
 
-        return $this->createOrderAndRedirect($package, $data['consultation_language']);
+        if (! $customerWhatsappPhone) {
+            return back()
+                ->withErrors(['customer_whatsapp_phone' => trans('plugins/package-purchase::package-purchase.account.invalid_whatsapp_phone')])
+                ->withInput();
+        }
+
+        return $this->createOrderAndRedirect(
+            $package,
+            $data['consultation_language'],
+            $customerWhatsappPhone
+        );
     }
 
-    protected function createOrderAndRedirect(Package $package, string $consultationLanguage): RedirectResponse
+    protected function createOrderAndRedirect(Package $package, string $consultationLanguage, string $customerWhatsappPhone): RedirectResponse
     {
         abort_if($package->status->getValue() !== BaseStatusEnum::PUBLISHED, 404);
 
-        $this->createOrFindPendingOrder($package, $consultationLanguage);
+        $order = $this->createOrFindPendingOrder($package, $consultationLanguage, $customerWhatsappPhone);
 
         return redirect()
-            ->route('public.package-purchase.account', ['tab' => 'orders'])
+            ->route('public.package-purchase.orders.show', $order)
             ->with('success', trans('plugins/package-purchase::package-purchase.account.order_created'));
     }
 
-    protected function createOrFindPendingOrder(Package $package, string $consultationLanguage): Order
+    protected function createOrFindPendingOrder(Package $package, string $consultationLanguage, string $customerWhatsappPhone): Order
     {
         $amount = package_purchase_parse_price($package->price);
         $currency = package_purchase_display_currency();
@@ -75,6 +96,8 @@ class CheckoutController extends BaseController
                 'package_name' => $package->name,
                 'package_price' => $package->price,
                 'duration' => $package->duration->getValue(),
+                'consultation_language' => $consultationLanguage,
+                'customer_whatsapp_phone' => $customerWhatsappPhone,
                 'amount' => $amount,
                 'currency' => $currency['code'],
                 'payment_amount' => $isFree ? 0 : $paymentAmount,
@@ -97,6 +120,7 @@ class CheckoutController extends BaseController
             'package_price' => $package->price,
             'duration' => $package->duration->getValue(),
             'consultation_language' => $consultationLanguage,
+            'customer_whatsapp_phone' => $customerWhatsappPhone,
             'amount' => $amount,
             'currency' => $currency['code'],
             'payment_amount' => $isFree ? 0 : $paymentAmount,

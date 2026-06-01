@@ -1,6 +1,6 @@
 <?php
 
-// English description: Handles admin package purchase exchange rate settings pages.
+// English description: Handles admin package purchase exchange rate and WhatsApp notification settings pages.
 
 namespace Botble\PackagePurchase\Http\Controllers;
 
@@ -32,6 +32,12 @@ class SettingsController extends SettingController
 
         return $this->performUpdate([
             package_purchase_setting_key('usd_to_vnd_exchange_rate') => $data['package_purchase_usd_to_vnd_exchange_rate'],
+            package_purchase_setting_key('whatsapp_enabled') => $request->boolean('package_purchase_whatsapp_enabled'),
+            package_purchase_setting_key('whatsapp_access_token') => $data['package_purchase_whatsapp_access_token'] ?? null,
+            package_purchase_setting_key('whatsapp_phone_number_id') => $data['package_purchase_whatsapp_phone_number_id'] ?? null,
+            package_purchase_setting_key('whatsapp_template_name') => $data['package_purchase_whatsapp_template_name'] ?? null,
+            package_purchase_setting_key('whatsapp_template_language') => $data['package_purchase_whatsapp_template_language'] ?? 'en_US',
+            package_purchase_setting_key('whatsapp_graph_api_version') => $data['package_purchase_whatsapp_graph_api_version'] ?? 'v21.0',
         ]);
     }
 }

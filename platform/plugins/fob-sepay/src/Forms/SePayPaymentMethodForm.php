@@ -1,5 +1,7 @@
 <?php
 
+// English description: Builds SePay payment method settings and bank account selectors.
+
 namespace FriendsOfBotble\SePay\Forms;
 
 use Botble\Base\Facades\Assets;
@@ -34,10 +36,8 @@ class SePayPaymentMethodForm extends PaymentMethodForm
                             $item['id'] => $item['bank']['short_name'] . ' - ' . $item['account_number'] . ' - ' . $item['account_holder_name'],
                         ])->all();
 
-                    $company = $client->company();
-                    $paymentCodePrefixes = collect(data_get($company, 'configurations.payment_code_formats', []))
-                        ->mapWithKeys(fn ($item) => [$item['prefix'] => $item['prefix']])
-                        ->all();
+                    $paymentCodePrefix = get_payment_setting('prefix', SEPAY_PAYMENT_METHOD_NAME, 'SDH');
+                    $paymentCodePrefixes = [$paymentCodePrefix => $paymentCodePrefix];
 
                     $form
                         ->add(
@@ -64,7 +64,7 @@ class SePayPaymentMethodForm extends PaymentMethodForm
                                 ->label('Tiền tố mã thanh toán')
                                 ->searchable()
                                 ->choices($paymentCodePrefixes)
-                                ->selected(get_payment_setting('prefix', SEPAY_PAYMENT_METHOD_NAME))
+                                ->selected($paymentCodePrefix)
                         )
                         ->add(
                             get_payment_setting_key('bank_display', SEPAY_PAYMENT_METHOD_NAME),
@@ -79,6 +79,7 @@ class SePayPaymentMethodForm extends PaymentMethodForm
                                 ->selected(get_payment_setting('bank_display', SEPAY_PAYMENT_METHOD_NAME, 'short_name'))
                         );
                 } catch (Exception $e) {
+                    $form->setData('bank_accounts_error', $e->getMessage());
                     Log::error($e);
                 }
             });
