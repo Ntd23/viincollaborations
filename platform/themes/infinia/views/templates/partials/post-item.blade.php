@@ -2,7 +2,7 @@
     $cardWrapperClass = $cardWrapperClass ?? 'card-body p-0 bg-white';
 @endphp
 
-<div class="card border-0 rounded-3 mt-8 position-relative d-inline-flex" data-aos="fade-zoom-in" data-aos-delay="{{ $loop->iteration }}00">
+<div class="card border-0 rounded-3 mt-4 position-relative d-inline-flex" data-aos="fade-zoom-in" data-aos-delay="{{ $loop->iteration }}00">
     {{ RvMedia::image($post->image, $post->name, 'horizontal_thumb', attributes: ['class' => 'rounded-3']) }}
     <div @class([$cardWrapperClass])>
         @if($post->firstCategory)

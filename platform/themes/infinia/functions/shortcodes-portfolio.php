@@ -32,7 +32,7 @@ app()->booted(function (): void {
 
     Shortcode::register('projects', __('Projects'), __('Projects'), function (ShortcodeCompiler $shortcode) {
         $projectIds = Shortcode::fields()->getIds('project_ids', $shortcode);
-        $tabs = Shortcode::fields()->getTabsData(['title', 'description'], $shortcode);
+        $tabs = Shortcode::fields()->getTabsData(['title', 'description', 'icon', 'icon_image'], $shortcode);
 
         $limit = $shortcode->limit ?: null;
 
@@ -64,11 +64,11 @@ app()->booted(function (): void {
                     ->numberItemsPerRow(1)
                     ->withoutAspectRatio()
                     ->choices(
-                        collect(range(1, 4))->mapWithKeys(function ($i) {
+                        collect(range(1, 5))->mapWithKeys(function ($i) {
                             return [
                                 $i => [
                                     'label' => __('Style :i', ['i' => $i]),
-                                    'image' => Theme::asset()->url("images/shortcodes/projects/style-$i.png"),
+                                    'image' => Theme::asset()->url(sprintf('images/shortcodes/projects/style-%s.png', $i === 5 ? 4 : $i)),
                                 ],
                             ];
                         })->all()
@@ -118,7 +118,7 @@ app()->booted(function (): void {
                 'image',
                 MediaImageField::class,
                 MediaImageFieldOption::make()
-                    ->collapsible('style', 4, $attributes['style'] ?? 1)
+                    ->collapsible('style', [4, 5], $attributes['style'] ?? 1)
                     ->label(__('Image'))
             )
             ->add(
@@ -142,7 +142,7 @@ app()->booted(function (): void {
                 ShortcodeTabsField::class,
                 ShortcodeTabsFieldOption::make()
                     ->attrs($attributes)
-                    ->collapsible('style', 3, $attributes['style'] ?? 1)
+                    ->collapsible('style', [3, 5], $attributes['style'] ?? 1)
                     ->fields([
                         'title' => [
                             'title' => __('Title'),
@@ -152,6 +152,14 @@ app()->booted(function (): void {
                             'title' => __('Description'),
                             'type' => 'textarea',
                             'required' => true,
+                        ],
+                        'icon' => [
+                            'title' => __('Icon'),
+                            'type' => 'coreIcon',
+                        ],
+                        'icon_image' => [
+                            'title' => __('Icon Image (It will override icon above if set)'),
+                            'type' => 'image',
                         ],
                     ])
             )

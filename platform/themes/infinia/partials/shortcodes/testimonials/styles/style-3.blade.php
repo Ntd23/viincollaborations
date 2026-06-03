@@ -1,9 +1,10 @@
 @php
     $avatars = $testimonials->pluck('name', 'image')->all();
-    $avatarChunks = array_chunk($avatars, ceil(count($avatars) / 2), true);
+    $avatarChunks = $avatars ? array_chunk($avatars, max(1, ceil(count($avatars) / 2)), true) : [];
+    $hasMultipleTestimonials = $testimonials->count() > 1;
 @endphp
 
-<section {!! $shortcode->htmlAttributes() !!} class="shortcode-testimonials shortcode-testimonials-style-3 section-testimonial-4 section-padding position-relative overflow-hidden">
+<section {!! $shortcode->htmlAttributes() !!} class="shortcode-testimonials shortcode-testimonials-style-3 section-testimonial-4 section-padding position-relative overflow-hidden border-bottom">
     <div class="container position-relative z-1">
         <div class="text-center">
             @if ($subtitle = $shortcode->subtitle)
@@ -14,7 +15,7 @@
             @endif
 
             @if ($title = $shortcode->title)
-                <h5 class="ds-3 my-3">{!! BaseHelper::clean($title) !!}</h5>
+                <h5 class="ds-5 my-3">{!! BaseHelper::clean($title) !!}</h5>
             @endif
 
             @if ($description = $shortcode->description)
@@ -35,32 +36,46 @@
             @endforeach
         @endif
 
-        <div class="row mt-6">
-            <div class="col-lg-6 mx-auto text-center">
-                <div class="swiper slider-two pt-2 pb-3">
-                    <div class="swiper-wrapper">
-                        @foreach($testimonials as $testimonial)
-                            <div class="swiper-slide">
-                                <div class="px-lg-6">
-                                    <div class="d-flex flex-column">
-                                        <strong class="d-block fs-6 ms-3 mb-0">{{ $testimonial->name }}</strong>
-                                        <div class="flag ms-3">
-                                            @if ($company = $testimonial->company)
-                                                <span class="fs-8">{{ $company }}</span>
+        @if ($testimonials->isNotEmpty())
+            <div class="row mt-6">
+                <div class="col-lg-6 mx-auto text-center">
+                    <div
+                        class="swiper slider-two pt-2 pb-3"
+                        @if ($hasMultipleTestimonials) data-loop="true" data-autoplay="true" @endif
+                    >
+                        <div class="swiper-wrapper">
+                            @foreach($testimonials as $testimonial)
+                                <div class="swiper-slide">
+                                    <div class="px-lg-6">
+                                        <div class="testimonial-style-3__author">
+                                            @if ($testimonial->image)
+                                                {{ RvMedia::image($testimonial->image, $testimonial->name, 'thumb', attributes: ['class' => 'testimonial-style-3__author-image']) }}
                                             @endif
+
+                                            <div class="testimonial-style-3__author-content">
+                                                <strong class="d-block fs-6 mb-0">{{ $testimonial->name }}</strong>
+                                                <div class="flag">
+                                                    @if ($company = $testimonial->company)
+                                                        <span class="fs-8">{{ $company }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
+                                        @if ($content = $testimonial->content)
+                                            <p class="text-900 mt-5">{!! BaseHelper::clean($content) !!}</p>
+                                        @endif
                                     </div>
-                                    @if ($content = $testimonial->content)
-                                        <p class="text-900 mt-5">{!! BaseHelper::clean($content) !!}</p>
-                                    @endif
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
+
+                        @if ($hasMultipleTestimonials)
+                            <div class="swiper-pagination slider-two-swiper-pagination"></div>
+                        @endif
                     </div>
-                    <div class="swiper-pagination"></div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
     @if($shortcode->background_image)
@@ -71,3 +86,47 @@
     <div class="rotate-center ellipse-rotate-success position-absolute z-0"></div>
     <div class="rotate-center-rev ellipse-rotate-primary position-absolute z-0"></div>
 </section>
+
+@once
+    <style>
+        .shortcode-testimonials-style-3::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            background: rgba(7, 26, 61, 0.14);
+            content: "";
+            pointer-events: none;
+        }
+
+        .shortcode-testimonials-style-3 .testimonial-style-3__author {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            max-width: 100%;
+            text-align: start;
+        }
+
+        .shortcode-testimonials-style-3 .testimonial-style-3__author-image {
+            flex: 0 0 auto;
+            width: 72px;
+            height: 72px;
+            border: 5px solid rgba(13, 110, 253, 0.12);
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .shortcode-testimonials-style-3 .testimonial-style-3__author-content {
+            min-width: 0;
+        }
+
+        @media (max-width: 575px) {
+            .shortcode-testimonials-style-3 .testimonial-style-3__author {
+                display: flex;
+                text-align: start;
+            }
+        }
+    </style>
+@endonce

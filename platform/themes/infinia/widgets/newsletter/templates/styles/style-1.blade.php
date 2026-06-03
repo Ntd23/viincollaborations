@@ -1,4 +1,4 @@
-<section class="widget-newsletter widget-newsletter-style-1 section-newsletter-1 pb-120 pt-120 fix position-relative">
+<section class="widget-newsletter widget-newsletter-style-1 section-newsletter-1 pt-60 pb-80 fix position-relative">
     <div class="container position-relative fix">
         <div class="row align-items-center fix text-center border rounded-4 position-relative z-1">
             <div class="col-lg-6 my-4">

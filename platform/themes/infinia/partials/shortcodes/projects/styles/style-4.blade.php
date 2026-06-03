@@ -1,4 +1,4 @@
-<section {!! $shortcode->htmlAttributes() !!} class="shortcode-projects shortcode-projects-style-4 section-team-1 position-relative fix section-padding">
+<section {!! $shortcode->htmlAttributes() !!} class="shortcode-projects shortcode-projects-style-4 section-team-1 position-relative fix section-padding border-bottom">
     <div class="container position-relative z-2">
         <div class="text-center">
             @if ($subtitle = $shortcode->subtitle)
@@ -13,7 +13,7 @@
             @endif
         </div>
 
-        <div class="row mt-8 align-items-stretch g-4">
+        <div class="row mt-6 align-items-stretch g-4">
             {{-- Left stat card --}}
             <div class="col-lg-5">
                 <div class="card border rounded-4 h-100 overflow-hidden d-flex flex-column position-relative">
@@ -93,3 +93,18 @@
     <div class="rotate-center ellipse-rotate-success position-absolute z-1"></div>
     <div class="rotate-center-rev ellipse-rotate-primary position-absolute z-1"></div>
 </section>
+
+@once
+    <style>
+        .shortcode-projects-style-4::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            background: rgba(7, 26, 61, 0.14);
+            content: "";
+            pointer-events: none;
+        }
+    </style>
+@endonce

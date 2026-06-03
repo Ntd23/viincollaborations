@@ -13,7 +13,7 @@
             @endif
 
             @if ($title = $shortcode->title)
-                <h3 class="ds-3 my-3">{!! BaseHelper::clean($title) !!}</h3>
+                <h3 class="ds-5 my-3">{!! BaseHelper::clean($title) !!}</h3>
             @endif
 
             @if ($description = $shortcode->description)
@@ -33,14 +33,14 @@
                                 </a>
                             </div>
                             <div class="hover-up">
-                                <a href="{{ $team->url }}" class="card-team text-start rounded-3 position-absolute top-100 translate-middle-y start-0 end-0 w-100 z-1 backdrop-filter w-auto p-4 mx-6 shadow-1">
-                                    <strong class="d-block fs-6">{{ $team->name }}</strong>
-                                    <span class="d-flex justify-content-between">
+                                <a href="{{ $team->url }}" class="card-team team-card-info text-start rounded-3 position-absolute top-100 translate-middle-y start-0 end-0 w-100 z-1 backdrop-filter w-auto p-4 mx-6 shadow-1">
+                                    <strong class="d-block fs-6 team-card-info__name" title="{{ $team->name }}">{{ $team->name }}</strong>
+                                    <span class="d-flex align-items-center justify-content-between gap-3 team-card-info__meta">
                                         @if ($title = $team->title)
-                                            <span class="fs-6 text-600 me-auto">{{ $title }}</span>
+                                            <span class="fs-6 text-600 me-auto team-card-info__title" title="{{ $title }}">{{ $title }}</span>
                                         @endif
 
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="14" viewBox="0 0 24 14" fill="#007BFF">
+                                        <svg class="team-card-info__arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="14" viewBox="0 0 24 14" fill="#007BFF">
                                             <path d="M17.4177 0.417969L16.3487 1.48705L21.1059 6.24429H0V7.75621H21.1059L16.3487 12.5134L17.4177 13.5825L24 7.0002L17.4177 0.417969Z" fill="currentColor" />
                                         </svg>
                                     </span>
@@ -62,14 +62,14 @@
                                     </a>
                                 </div>
                                 <div class="hover-up">
-                                    <a href="{{ $team->url }}" class="card-team text-start rounded-3 position-absolute top-100 translate-middle-y start-0 end-0 w-100 z-1 backdrop-filter w-auto p-4 mx-6 shadow-1">
-                                        <strong class="d-block fs-6">{{ $team->name }}</strong>
-                                        <span class="d-flex justify-content-between">
+                                    <a href="{{ $team->url }}" class="card-team team-card-info text-start rounded-3 position-absolute top-100 translate-middle-y start-0 end-0 w-100 z-1 backdrop-filter w-auto p-4 mx-6 shadow-1">
+                                        <strong class="d-block fs-6 team-card-info__name" title="{{ $team->name }}">{{ $team->name }}</strong>
+                                        <span class="d-flex align-items-center justify-content-between gap-3 team-card-info__meta">
                                         @if ($title = $team->title)
-                                                <span class="fs-6 text-600 me-auto">{{ $title }}</span>
+                                                <span class="fs-6 text-600 me-auto team-card-info__title" title="{{ $title }}">{{ $title }}</span>
                                             @endif
 
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="14" viewBox="0 0 24 14" fill="#007BFF">
+                                        <svg class="team-card-info__arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="14" viewBox="0 0 24 14" fill="#007BFF">
                                             <path d="M17.4177 0.417969L16.3487 1.48705L21.1059 6.24429H0V7.75621H21.1059L16.3487 12.5134L17.4177 13.5825L24 7.0002L17.4177 0.417969Z" fill="currentColor" />
                                         </svg>
                                     </span>
@@ -91,3 +91,35 @@
     <div class="rotate-center ellipse-rotate-success position-absolute z-0"></div>
     <div class="rotate-center-rev ellipse-rotate-primary position-absolute z-0"></div>
 </section>
+
+@once
+    <style>
+        .shortcode-teams-style-4 .team-card-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 150px;
+            overflow: hidden;
+        }
+
+        .shortcode-teams-style-4 .team-card-info__meta,
+        .shortcode-teams-style-4 .team-card-info__name,
+        .shortcode-teams-style-4 .team-card-info__title {
+            min-width: 0;
+        }
+
+        .shortcode-teams-style-4 .team-card-info__name,
+        .shortcode-teams-style-4 .team-card-info__title {
+            display: -webkit-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+
+        .shortcode-teams-style-4 .team-card-info__arrow {
+            flex: 0 0 auto;
+        }
+    </style>
+@endonce

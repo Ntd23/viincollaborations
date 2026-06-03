@@ -22,6 +22,8 @@ use Botble\Theme\Facades\Theme;
 use Botble\Theme\Supports\ThemeSupport;
 use Botble\Theme\Typography\TypographyItem;
 use Illuminate\Http\Request;
+use Theme\Infinia\Providers\BannerHomepageServiceProvider;
+use Theme\Infinia\Providers\BusinessSetupSliderServiceProvider;
 
 register_page_template([
     'default' => __('Default'),
@@ -29,6 +31,9 @@ register_page_template([
 ]);
 
 app()->booted(function (): void {
+    app()->register(BannerHomepageServiceProvider::class);
+    app()->register(BusinessSetupSliderServiceProvider::class);
+
     ThemeSupport::registerSiteCopyright();
     ThemeSupport::registerSocialLinks();
     ThemeSupport::registerSocialSharing();
